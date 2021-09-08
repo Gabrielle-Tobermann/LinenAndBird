@@ -24,7 +24,7 @@ namespace LinenAndBird.Controllers
             _orderRepo = new OrdersRepository();
         }
 
-        [HttpPost("bird/{birdID/hat/{hatId}/{price")]
+        [HttpPost("bird/{birdID/hat/{hatId}/{price}")]
         public IActionResult CreateOrder(CreateOrderCommand command)
         {
             var hatToOrder = _hatRepo.GetById(command.HatId);
