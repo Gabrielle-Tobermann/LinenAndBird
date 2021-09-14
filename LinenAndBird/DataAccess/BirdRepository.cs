@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace LinenAndBird.DataAccess
 {
@@ -24,9 +25,37 @@ namespace LinenAndBird.DataAccess
 
         internal IEnumerable<Bird> GetAll()
         {
-            return _birds;
-        }
+            // connections are like the tunnel /w apps and databases
+            using var connection = new SqlConnection("Server=localhost;Database=LinenAndBird;Trusted_Connection=True;");
+            // connections aren't open by default
+            connection.Open();
 
+            // this is what tells sql what we want to do
+            var command = connection.CreateCommand();
+            command.CommandText = @"select *
+                                    From Birds";
+
+            // execute reader is for when we care about getting all the results of our query
+            var reader = command.ExecuteReader();
+
+            var birds = new List<Bird>();
+
+            // data readers are weird, they only get one row from the results at a time
+            while (reader.Read())
+            {
+                // Mapping data from the relational model to the object model
+                var bird = new Bird();
+                bird.Size = reader["Size"].ToString();
+                bird.Id = reader.GetGuid(0);
+                bird.Type = (BirdType)reader["Type"];
+                bird.Name = reader["Name"].ToString();
+
+                // each bird goes in the list to return later
+                birds.Add(bird);
+            }
+            return birds;
+            // return _birds;
+        }
         internal void Add(Bird newBird)
         {
             newBird.Id = Guid.NewGuid();
