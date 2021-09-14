@@ -49,7 +49,7 @@ namespace LinenAndBird.DataAccess
                 bird.Id = reader.GetGuid(0);
                 bird.Type = (BirdType)reader["Type"];
                 bird.Name = reader["Name"].ToString();
-
+                bird.Color = reader["Color"].ToString();
                 // each bird goes in the list to return later
                 birds.Add(bird);
             }
@@ -64,7 +64,37 @@ namespace LinenAndBird.DataAccess
 
         internal Bird GetById(Guid birdId)
         {
-            return _birds.FirstOrDefault(hat => hat.Id == birdId);
+            // connections are like the tunnel /w apps and databases
+            using var connection = new SqlConnection("Server=localhost;Database=LinenAndBird;Trusted_Connection=True;");
+            // connections aren't open by default
+            connection.Open();
+
+            // this is what tells sql what we want to do
+            var command = connection.CreateCommand();
+            command.CommandText = $@"select *
+                                    From Birds
+                                    where id = @id";
+
+            // parameterization prevents sql injections
+            command.Parameters.AddWithValue("id", birdId);
+
+            // return _birds.FirstOrDefault(hat => hat.Id == birdId);
+
+            var reader = command.ExecuteReader();
+
+            if (reader.Read())
+            {
+                var bird = new Bird();
+                bird.Size = reader["Size"].ToString();
+                bird.Id = reader.GetGuid(0);
+                bird.Type = (BirdType)reader["Type"];
+                bird.Name = reader["Name"].ToString();
+                bird.Color = reader["Color"].ToString();
+
+                return bird;
+            }
+
+            return null;
         }
     }
 }

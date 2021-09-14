@@ -37,5 +37,18 @@ namespace LinenAndBird.Controllers
             return Created("api/birds/1", newBird);
         }
 
+        [HttpGet("{id}")]
+        public IActionResult GetBirdById(Guid id)
+        {
+            var bird = _repo.GetById(id);
+
+            if (bird == null)
+            {
+                return NotFound($"No bird with the id {id} was found.");
+            }
+
+            return Ok(bird);
+        }
+
     }
 }
