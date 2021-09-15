@@ -10,23 +10,12 @@ namespace LinenAndBird.DataAccess
 {
     public class BirdRepository
     {
-        static List<Bird> _birds = new List<Bird>
-        {
-            new Bird
-            {
-                Id = Guid.NewGuid(),
-                Name = "Jimmy",
-                Color = "Red",
-                Size = "Small",
-                Type = BirdType.Dead,
-                Accessories = new List<string> {"Beannie", "Gold Wing Tips"}
-            }
-        };
+        const string _connectionString = "Server=localhost;Database=LinenAndBird;Trusted_Connection=True;";
 
         internal IEnumerable<Bird> GetAll()
         {
             // connections are like the tunnel /w apps and databases
-            using var connection = new SqlConnection("Server=localhost;Database=LinenAndBird;Trusted_Connection=True;");
+            using var connection = new SqlConnection(_connectionString);
             // connections aren't open by default
             connection.Open();
 
@@ -56,16 +45,79 @@ namespace LinenAndBird.DataAccess
             return birds;
             // return _birds;
         }
+
+        internal void Remove(Guid id)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"Delete
+                                From Birds
+                                Where Id = @id";
+
+            cmd.Parameters.AddWithValue("id", id);
+
+            cmd.ExecuteNonQuery();
+
+        }
+
+        internal object Update(Guid id, Bird bird)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"update Birds
+                                Set Color = @color,
+                                    Name = @name,
+                                    Size = @size,
+                                output inserted.*
+                                Where id = @id";
+
+            cmd.Parameters.AddWithValue("Type", bird.Type);
+            cmd.Parameters.AddWithValue("Color", bird.Color);
+            cmd.Parameters.AddWithValue("Size", bird.Size);
+            cmd.Parameters.AddWithValue("Name", bird.Name);
+            cmd.Parameters.AddWithValue("id", id);
+
+            var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapFromReader(reader);
+            }
+
+            return null;
+        }
+
         internal void Add(Bird newBird)
         {
-            newBird.Id = Guid.NewGuid();
-            _birds.Add(newBird);
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"insert into birds(Type,Color,Size,Name)
+                                output inserted.id
+                                values (@Type,@Color,@Size,@Name)";
+
+            cmd.Parameters.AddWithValue("Type", newBird.Type);
+            cmd.Parameters.AddWithValue("Color", newBird.Color);
+            cmd.Parameters.AddWithValue("Size", newBird.Size);
+            cmd.Parameters.AddWithValue("Name", newBird.Name);
+
+            // executeNonQuery will just return the number of rows affected
+            // var numOfRowsAffected = cmd.ExecuteNonQuery();
+            var newId = (Guid) cmd.ExecuteScalar();
+            newBird.Id = newId;
+
+            //newBird.Id = Guid.NewGuid();
+            //_birds.Add(newBird);
         }
 
         internal Bird GetById(Guid birdId)
         {
             // connections are like the tunnel /w apps and databases
-            using var connection = new SqlConnection("Server=localhost;Database=LinenAndBird;Trusted_Connection=True;");
+            using var connection = new SqlConnection(_connectionString);
             // connections aren't open by default
             connection.Open();
 
@@ -84,17 +136,23 @@ namespace LinenAndBird.DataAccess
 
             if (reader.Read())
             {
+                MapFromReader(reader);
+            }
+
+            return null;
+        }
+
+        Bird MapFromReader(SqlDataReader reader)
+        {
+                // Mapping data from the relational model to the object model
                 var bird = new Bird();
                 bird.Size = reader["Size"].ToString();
                 bird.Id = reader.GetGuid(0);
                 bird.Type = (BirdType)reader["Type"];
                 bird.Name = reader["Name"].ToString();
                 bird.Color = reader["Color"].ToString();
-
+                // each bird goes in the list to return later
                 return bird;
-            }
-
-            return null;
         }
     }
 }
