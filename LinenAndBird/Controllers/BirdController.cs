@@ -34,7 +34,7 @@ namespace LinenAndBird.Controllers
             }
             _repo.Add(newBird);
 
-            return Created($"api/birds/{newBird.Id}", newBird);
+            return Created($"/api/birds/{newBird.Id}", newBird);
         }
 
         [HttpGet("{id}")]
@@ -58,7 +58,7 @@ namespace LinenAndBird.Controllers
             return Ok();
         }
 
-        [HttpPut("{id")]
+        [HttpPut("{id}")]
         public IActionResult UpdateBird(Guid id, Bird bird)
         {
             var birdToUpdate = _repo.GetById(id);
