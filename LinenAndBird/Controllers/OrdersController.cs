@@ -24,6 +24,23 @@ namespace LinenAndBird.Controllers
             _orderRepo = new OrdersRepository();
         }
 
+
+        public IActionResult GetAllOrders()
+        {
+            return Ok(_orderRepo.GetAll());
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetORderById(Guid id)
+        {
+            Order order = _orderRepo.Get(id);
+
+            if (order == null)
+                return NotFound("No order exists with that id.");
+
+            return Ok(order);
+        }
+
         [HttpPost("bird/{birdID}/hat/{hatId}/{price}")]
         public IActionResult CreateOrder(CreateOrderCommand command)
         {

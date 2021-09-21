@@ -179,18 +179,18 @@ namespace LinenAndBird.DataAccess
 
             return bird;
         }
-
-        Bird MapFromReader(SqlDataReader reader)
-        {
-                // Mapping data from the relational model to the object model
-                var bird = new Bird();
-                bird.Size = reader["Size"].ToString();
-                bird.Id = reader.GetGuid(0);
-                bird.Type = (BirdType)reader["Type"];
-                bird.Name = reader["Name"].ToString();
-                bird.Color = reader["Color"].ToString();
-                // each bird goes in the list to return later
-                return bird;
-        }
+         
+        //Bird MapFromReader(SqlDataReader reader)
+        //{
+        //        // Mapping data from the relational model to the object model
+        //        var bird = new Bird();
+        //        bird.Size = reader["Size"].ToString();
+        //        bird.Id = reader.GetGuid(0);
+        //        bird.Type = (BirdType)reader["Type"];
+        //        bird.Name = reader["Name"].ToString();
+        //        bird.Color = reader["Color"].ToString();
+        //        // each bird goes in the list to return later
+        //        return bird;
+        //}
     }
 }
