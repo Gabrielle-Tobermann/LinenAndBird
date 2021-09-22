@@ -6,19 +6,33 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Dapper;
+using Microsoft.Extensions.Configuration;
 
 namespace LinenAndBird.DataAccess
 {
     public class BirdRepository
     {
-        const string _connectionString = "Server=localhost;Database=LinenAndBird;Trusted_Connection=True;";
+        string _connectionString;
 
+        public BirdRepository(IConfiguration config)
+        {
+            _connectionString = config.GetConnectionString("LinenAndBird");
+        }
         internal IEnumerable<Bird> GetAll()
         {
             // connections are like the tunnel /w apps and databases
             using var db = new SqlConnection(_connectionString);
 
             var birds = db.Query<Bird>(@"Select * From Birds");
+
+            var accessorySql = @"Select * From BirdAccessories";
+
+            var accessories = db.Query<BirdAccessory>(accessorySql);
+
+            foreach (var bird in birds)
+            {
+                bird.Accessories = accessories.Where(accessory => accessory.BirdId == bird.Id);
+            }
 
             return birds; 
             // connections aren't open by default
@@ -148,6 +162,7 @@ namespace LinenAndBird.DataAccess
         {
             // connections are like the tunnel /w apps and databases
             using var db = new SqlConnection(_connectionString);
+
             // connections aren't open by default
             // connection.Open();
 
@@ -171,12 +186,21 @@ namespace LinenAndBird.DataAccess
 
             //return null;
 
-            var sql = $@"select *
+            var birdSql = $@"select *
                       From Birds
                       where id = @id";
 
-            var bird = db.QueryFirst<Bird>(sql, new { id = birdId });
+            var bird = db.QueryFirst<Bird>(birdSql, new { id = birdId });
 
+            if (bird == null) return null;
+
+            var accessorySql = @"Select *
+                                 From BirdAccessories
+                                 Where birdid = @birdId";
+
+            var accessories = db.Query<BirdAccessory>(accessorySql, new { birdId });
+
+            bird.Accessories = accessories;
             return bird;
         }
          

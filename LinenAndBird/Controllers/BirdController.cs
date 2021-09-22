@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace LinenAndBird.Controllers
 {
@@ -14,9 +15,13 @@ namespace LinenAndBird.Controllers
     public class BirdController : ControllerBase
     {
         BirdRepository _repo;
-        public BirdController()
+        // this is asking asp.net for the application configuration
+        // this is known as Dependency Injection
+        public BirdController(BirdRepository repo)
         {
-            _repo = new BirdRepository();
+            // var connectionString = config.GetConnectionString("LinenAndBird");
+            // _repo = new BirdRepository(connectionString);
+            _repo = repo;
         }
 
         [HttpGet]

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Dapper;
+using Microsoft.Extensions.Configuration;
 
 // ctrl shift m pops open the window
 
@@ -13,9 +14,12 @@ namespace LinenAndBird.DataAccess
 {
     public class OrdersRepository
     {
-        const string _connectionString = "Server=localhost;Database=LinenAndBird;Trusted_Connection=True;";
+        readonly string _connectionString;
 
-
+        public OrdersRepository(IConfiguration config)
+        {
+            _connectionString = config.GetConnectionString("LinenAndBird");
+        }
         internal IEnumerable<Order> GetAll()
         {
             using var db = new SqlConnection(_connectionString);
