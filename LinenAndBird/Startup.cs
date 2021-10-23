@@ -36,7 +36,7 @@ namespace LinenAndBird
             // We're gonna regirster every repo as a transient
             services.AddTransient<BirdRepository>(); // create a new thing anytime someone asks for one
             services.AddTransient<OrdersRepository>(); // create a new thing anytime someone asks for one
-            services.AddTransient<HatRepository>(); // create a new thing anytime someone asks for one
+            services.AddTransient<IHatRepository,HatRepository>(); // create a new thing anytime someone asks for one
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -53,7 +53,7 @@ namespace LinenAndBird
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LinenAndBird v1"));
             }
-
+            app.UseCors(cfg => cfg.AllowAnyHeader() .AllowAnyMethod() .AllowAnyOrigin());
             app.UseHttpsRedirection();
 
             app.UseRouting();
